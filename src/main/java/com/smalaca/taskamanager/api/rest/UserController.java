@@ -1,5 +1,6 @@
 package com.smalaca.taskamanager.api.rest;
 
+import com.smalaca.acl.usermanagement.FakeAclUserRepository;
 import com.smalaca.parallelrun.usermanagement.ParallelRunUserTestRecord;
 import com.smalaca.taskamanager.dto.UserDto;
 import com.smalaca.taskamanager.exception.UserNotFoundException;
@@ -9,6 +10,7 @@ import com.smalaca.taskamanager.model.embedded.UserName;
 import com.smalaca.taskamanager.model.entities.User;
 import com.smalaca.taskamanager.model.enums.TeamRole;
 import com.smalaca.taskamanager.repository.UserRepository;
+import com.smalaca.usermanagement.UserManagementApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -109,6 +111,10 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
         ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, uriComponentsBuilder.cloneBuilder());
+        ParallelRunUserTestRecord recordToCompare = new UserManagementApi(new FakeAclUserRepository())
+                .createUser(userDto, uriComponentsBuilder.cloneBuilder());
+
+        record.compareWithoutUserId(recordToCompare);
 
         return record.getResponse();
     }

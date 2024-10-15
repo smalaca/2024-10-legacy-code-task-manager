@@ -19,16 +19,20 @@ public class ParallelRunUserTestRecord {
         this.user = UserToCompare.createFrom(user);
     }
 
-    public void compareWith(ParallelRunUserTestRecord record) {
-        if (isUserEqual(record) && isRequestEqual(record)) {
+    public void setUser(com.smalaca.usermanagement.User user) {
+        this.user = UserToCompare.createFrom(user);
+    }
+
+    public void compareWithoutUserId(ParallelRunUserTestRecord record) {
+        if (isUserWithoutIdEqual(record) && isRequestEqual(record)) {
             System.out.println("RECORDS ARE THE SAME");
         } else {
             System.out.println("RECORDS ARE DIFFERENT");
         }
     }
 
-    private boolean isUserEqual(ParallelRunUserTestRecord record) {
-        return this.user.equals(record.user);
+    private boolean isUserWithoutIdEqual(ParallelRunUserTestRecord record) {
+        return this.user.isUserWithoutIdEqual(record.user);
     }
 
     private boolean isRequestEqual(ParallelRunUserTestRecord record) {
