@@ -122,11 +122,18 @@ public class ProjectController {
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<ProjectDto> updateProject(@PathVariable("id") Long id, @RequestBody ProjectDto projectDto) {
+        ParallelRunProjectTestRecord record = updateProjectLegacy(id, projectDto);
+        return record.getResponse();
+    }
+
+    private ParallelRunProjectTestRecord updateProjectLegacy(Long id, ProjectDto projectDto) {
+        ParallelRunProjectTestRecord<ProjectDto> record = new ParallelRunProjectTestRecord<>();
         try {
             Project project = getProjectById(id);
             project.setProjectStatus(ProjectStatus.valueOf(projectDto.getProjectStatus()));
 
             Project updated = projectRepository.save(project);
+            record.setProject(updated);
 
             ProjectDto response = new ProjectDto();
             response.setId(updated.getId());
@@ -137,19 +144,34 @@ public class ProjectController {
                 response.setProductOwnerId(updated.getProductOwner().getId());
             }
 
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            record.setResponse(new ResponseEntity<>(response, HttpStatus.OK));
+            return record;
         } catch (ProjectNotFoundException exception) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            record.setResponse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            return record;
         }
     }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable("id") Long id) {
+        ParallelRunProjectTestRecord record = deleteProjectLegacy(id);
+        return record.getResponse();
+    }
+
+    private ParallelRunProjectTestRecord deleteProjectLegacy(Long id) {
+        ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
         try {
-            projectRepository.delete(getProjectById(id));
-            return new ResponseEntity<>(HttpStatus.OK);
+            Project project = getProjectById(id);
+            record.setProject(project);
+            projectRepository.delete(project);
+
+            ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
+            record.setResponse(response);
+            return record;
         } catch (ProjectNotFoundException exception) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            record.setResponse(response);
+            return record;
         }
     }
 
@@ -157,33 +179,55 @@ public class ProjectController {
     @PutMapping("/{projectId}/teams/{teamId}")
     @Transactional
     public ResponseEntity<Void> addTeam(@PathVariable Long projectId, @PathVariable Long teamId) {
+        ParallelRunProjectTestRecord<Void> record = addTeamLegacy(projectId, teamId);
+        return record.getResponse();
+    }
+
+    private ParallelRunProjectTestRecord<Void> addTeamLegacy(Long projectId, Long teamId) {
+        ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
+
         try {
             Project project = getProjectById(projectId);
-
+            record.setProject(project);
             try {
                 Team team = getTeamById(teamId);
 
                 project.addTeam(team);
                 team.setProject(project);
+                record.setProject(project);
+                record.setTeam(team);
 
                 projectRepository.save(project);
                 teamRepository.save(team);
 
-                return new ResponseEntity<>(HttpStatus.OK);
+                ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
+                record.setResponse(response);
+                return record;
             } catch (TeamNotFoundException exception) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                record.setResponse(response);
+                return record;
             }
 
         } catch (ProjectNotFoundException exception) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            record.setResponse(response);
+            return record;
         }
     }
 
     @DeleteMapping("/{projectId}/teams/{teamId}")
     @Transactional
     public ResponseEntity<Void> removeTeam(@PathVariable Long projectId, @PathVariable Long teamId) {
+        ParallelRunProjectTestRecord record = removeTeamLegacy(projectId, teamId);
+        return record.getResponse();
+    }
+
+    private ParallelRunProjectTestRecord removeTeamLegacy(Long projectId, Long teamId) {
+        ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
         try {
             Project project = getProjectById(projectId);
+            record.setProject(project);
 
             try {
                 Team team = getTeamById(teamId);
@@ -193,15 +237,19 @@ public class ProjectController {
 
                 projectRepository.save(project);
                 teamRepository.save(team);
+                record.setProject(project);
+                record.setTeam(team);
 
-                return new ResponseEntity<>(HttpStatus.OK);
+                record.setResponse(new ResponseEntity<>(HttpStatus.OK));
             } catch (TeamNotFoundException exception) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                record.setResponse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
             }
 
         } catch (ProjectNotFoundException exception) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            record.setResponse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         }
+
+        return record;
     }
 
     private Project getProjectById(Long id) {
