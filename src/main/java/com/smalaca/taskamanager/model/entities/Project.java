@@ -69,7 +69,9 @@ public class Project {
     }
 
     public void addTeam(Team team) {
-        teams.add(team);
+        if (!teams.contains(team)) {
+            teams.add(team);
+        }
     }
 
     public void removeTeam(Team team) {
