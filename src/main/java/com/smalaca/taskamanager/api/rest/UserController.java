@@ -1,5 +1,6 @@
 package com.smalaca.taskamanager.api.rest;
 
+import com.smalaca.parallelrun.ParallelRunUserTestRecord;
 import com.smalaca.taskamanager.dto.UserDto;
 import com.smalaca.taskamanager.exception.UserNotFoundException;
 import com.smalaca.taskamanager.model.embedded.EmailAddress;
@@ -107,8 +108,21 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
+        ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, uriComponentsBuilder);
+//        ResponseEntity<Void> httpResponseNew = createUserInLegacyCode(userDto, uriComponentsBuilder);
+
+//        recordComparison(responseLegacy, responseNew);
+        record.compareWith(record);
+
+        return record.getResponse();
+    }
+
+    private ParallelRunUserTestRecord createUserInLegacyCode(UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
+        ParallelRunUserTestRecord record = new ParallelRunUserTestRecord();
         if (exists(userDto)) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.CONFLICT);
+            record.setResponse(response);
+            return record;
         } else {
             User user = new User();
             user.setTeamRole(TeamRole.valueOf(userDto.getTeamRole()));
@@ -119,11 +133,14 @@ public class UserController {
             user.setLogin(userDto.getLogin());
             user.setPassword(userDto.getPassword());
 
+            record.setUser(user);
             User saved = userRepository.save(user);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(uriComponentsBuilder.path("/user/{id}").buildAndExpand(saved.getId()).toUri());
-            return new ResponseEntity<>(headers, HttpStatus.CREATED);
+            ResponseEntity<Void> response = new ResponseEntity<>(headers, HttpStatus.CREATED);
+            record.setResponse(response);
+            return record;
         }
     }
 
