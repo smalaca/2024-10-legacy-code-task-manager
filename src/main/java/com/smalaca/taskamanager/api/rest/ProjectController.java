@@ -1,5 +1,6 @@
 package com.smalaca.taskamanager.api.rest;
 
+import com.smalaca.parallelrun.ParallelRunProjectTestRecord;
 import com.smalaca.taskamanager.dto.ProjectDto;
 import com.smalaca.taskamanager.exception.ProjectNotFoundException;
 import com.smalaca.taskamanager.exception.TeamNotFoundException;
@@ -89,17 +90,29 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<Void> createProject(@RequestBody ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder) {
+        ParallelRunProjectTestRecord record = createProjectLegacy(projectDto, uriComponentsBuilder);
+        return record.getResponse();
+    }
+
+    private ParallelRunProjectTestRecord createProjectLegacy(ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder) {
+        ParallelRunProjectTestRecord record = new ParallelRunProjectTestRecord();
         if (exists(projectDto)) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.CONFLICT);
+            record.setResponse(response);
+            return record;
         } else {
             Project project = new Project();
             project.setName(projectDto.getName());
 
+            record.setProject(project);
             Project saved = projectRepository.save(project);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(uriComponentsBuilder.path("/project/{id}").buildAndExpand(saved.getId()).toUri());
-            return new ResponseEntity<>(headers, HttpStatus.CREATED);
+
+            ResponseEntity<Void> response = new ResponseEntity<>(headers, HttpStatus.CREATED);
+            record.setResponse(response);
+            return record;
         }
     }
 
