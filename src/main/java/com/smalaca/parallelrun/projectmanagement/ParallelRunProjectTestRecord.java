@@ -42,7 +42,6 @@ public class ParallelRunProjectTestRecord<T> {
     }
 
     private boolean isRequestEqual(ParallelRunProjectTestRecord record) {
-        boolean isRequestEqual = record.response.getStatusCode().equals(this.response.getStatusCode());
-        return isRequestEqual;
+        return record.response.getStatusCode().equals(this.response.getStatusCode());
     }
 }

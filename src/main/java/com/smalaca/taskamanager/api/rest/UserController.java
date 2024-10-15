@@ -108,11 +108,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
-        ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, uriComponentsBuilder);
-//        ResponseEntity<Void> httpResponseNew = createUserInLegacyCode(userDto, uriComponentsBuilder);
-
-//        recordComparison(responseLegacy, responseNew);
-        record.compareWith(record);
+        ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, uriComponentsBuilder.cloneBuilder());
 
         return record.getResponse();
     }
