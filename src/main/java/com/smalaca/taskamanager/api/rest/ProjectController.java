@@ -1,6 +1,6 @@
 package com.smalaca.taskamanager.api.rest;
 
-import com.smalaca.parallelrun.ParallelRunProjectTestRecord;
+import com.smalaca.parallelrun.projectmanagement.ParallelRunProjectTestRecord;
 import com.smalaca.taskamanager.dto.ProjectDto;
 import com.smalaca.taskamanager.exception.ProjectNotFoundException;
 import com.smalaca.taskamanager.exception.TeamNotFoundException;

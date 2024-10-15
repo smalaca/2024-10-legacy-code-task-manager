@@ -1,4 +1,4 @@
-package com.smalaca.parallelrun;
+package com.smalaca.parallelrun.projectmanagement;
 
 import com.smalaca.taskamanager.model.entities.Project;
 import lombok.Getter;

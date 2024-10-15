@@ -1,4 +1,4 @@
-package com.smalaca.parallelrun;
+package com.smalaca.parallelrun.usermanagement;
 
 import com.smalaca.taskamanager.model.entities.User;
 import lombok.Getter;

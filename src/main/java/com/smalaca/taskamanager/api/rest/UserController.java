@@ -1,6 +1,6 @@
 package com.smalaca.taskamanager.api.rest;
 
-import com.smalaca.parallelrun.ParallelRunUserTestRecord;
+import com.smalaca.parallelrun.usermanagement.ParallelRunUserTestRecord;
 import com.smalaca.taskamanager.dto.UserDto;
 import com.smalaca.taskamanager.exception.UserNotFoundException;
 import com.smalaca.taskamanager.model.embedded.EmailAddress;
