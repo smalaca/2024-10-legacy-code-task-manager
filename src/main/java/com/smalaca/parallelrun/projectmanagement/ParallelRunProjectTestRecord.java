@@ -21,6 +21,10 @@ public class ParallelRunProjectTestRecord<T> {
         this.project = ProjectToCompare.createFrom(project);
     }
 
+    public void setProject(com.smalaca.projectmanagement.Project project) {
+        this.project = ProjectToCompare.createFrom(project);
+    }
+
     public void setTeam(Team team) {
         this.team = TeamToCompare.createFrom(team);
     }

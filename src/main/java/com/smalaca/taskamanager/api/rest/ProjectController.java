@@ -1,6 +1,8 @@
 package com.smalaca.taskamanager.api.rest;
 
+import com.smalaca.acl.projectmanagement.FakeAclProjectRepository;
 import com.smalaca.parallelrun.projectmanagement.ParallelRunProjectTestRecord;
+import com.smalaca.projectmanagement.ProjectManagementApi;
 import com.smalaca.taskamanager.dto.ProjectDto;
 import com.smalaca.taskamanager.exception.ProjectNotFoundException;
 import com.smalaca.taskamanager.exception.TeamNotFoundException;
@@ -90,7 +92,12 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<Void> createProject(@RequestBody ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder) {
-        ParallelRunProjectTestRecord record = createProjectLegacy(projectDto, uriComponentsBuilder);
+        ParallelRunProjectTestRecord record = createProjectLegacy(projectDto, uriComponentsBuilder.cloneBuilder());
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(new FakeAclProjectRepository())
+                .createProject(projectDto, uriComponentsBuilder.cloneBuilder());
+
+        record.compareWithoutId(recordToCompare);
+
         return record.getResponse();
     }
 
