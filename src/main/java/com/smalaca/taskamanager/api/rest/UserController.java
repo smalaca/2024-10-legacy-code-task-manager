@@ -36,6 +36,7 @@ import java.util.Optional;
 @SuppressWarnings("checkstyle:ClassFanOutComplexity")
 public class UserController {
     private final UserRepository userRepository;
+    private boolean disabledOld;
 
     @Autowired
     public UserController(UserRepository userRepository) {
@@ -113,12 +114,18 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
         ParallelRunUserInteractionRecord interaction = new ParallelRunUserInteractionRecord();
-        ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, copyOf(uriComponentsBuilder), interaction);
         AclUserRepository aclUserRepository = new AclUserRepository(userRepository, interaction);
-        ParallelRunUserTestRecord recordToCompare = new UserManagementApi(aclUserRepository)
-                .createUser(asUserDataTransferObject(userDto), copyOf(uriComponentsBuilder));
+        aclUserRepository.setDisabledOld(disabledOld);
 
-        record.compareWithoutUserId(recordToCompare);
+        ParallelRunUserTestRecord record = null;
+
+        if (!disabledOld) {
+            record = createUserInLegacyCode(userDto, copyOf(uriComponentsBuilder), interaction);
+        } else {
+            record = new UserManagementApi(aclUserRepository)
+                    .createUser(asUserDataTransferObject(userDto), copyOf(uriComponentsBuilder));
+        }
+
 
         return record.getResponse();
     }
@@ -260,5 +267,9 @@ public class UserController {
         }
 
         return user.get();
+    }
+
+    public void setDisabledOld(boolean disabledOld) {
+        this.disabledOld = disabledOld;
     }
 }

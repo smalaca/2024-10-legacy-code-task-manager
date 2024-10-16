@@ -148,4 +148,8 @@ public class User {
                 .append(teamRole)
                 .toHashCode();
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

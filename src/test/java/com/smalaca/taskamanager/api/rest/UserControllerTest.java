@@ -86,6 +86,7 @@ class UserControllerTest {
     void shouldCreateUser() {
         UserDto user = givenUserWithFirstAndLastName("Natasha", "Romanow");
         UriComponentsBuilder uriComponentsBuilder = fromUriString("/");
+        controller.setDisabledOld(true);
 
         ResponseEntity<Void> response = controller.createUser(user, uriComponentsBuilder);
 
