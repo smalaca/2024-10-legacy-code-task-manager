@@ -14,6 +14,10 @@ public class Team {
     @ManyToOne
     private Project project;
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }

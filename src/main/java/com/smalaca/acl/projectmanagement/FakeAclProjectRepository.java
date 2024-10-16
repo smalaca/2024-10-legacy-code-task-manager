@@ -1,5 +1,6 @@
 package com.smalaca.acl.projectmanagement;
 
+import com.smalaca.parallelrun.projectmanagement.ParallelRunProjectInteraction;
 import com.smalaca.projectmanagement.Project;
 import com.smalaca.projectmanagement.ProjectRepository;
 
@@ -24,7 +25,7 @@ public class FakeAclProjectRepository implements ProjectRepository {
 
     @Override
     public Optional<Project> findById(Long id) {
-        return Optional.empty();
+        return interaction.findProjectById(id);
     }
 
     @Override

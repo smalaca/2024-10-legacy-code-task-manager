@@ -55,20 +55,28 @@ public class Project {
         return productOwner;
     }
 
+    public void setProductOwner(ProductOwner productOwner) {
+        this.productOwner = productOwner;
+    }
+
     public List<Team> getTeams() {
         return teams;
     }
 
     public void addTeam(Team team) {
-        if (!teams.contains(team)) {
+        if (!exists(team)) {
             teams.add(team);
         }
     }
 
     void removeTeam(Team team) {
-        if (!teams.contains(team)) {
+        if (!exists(team)) {
             throw new RuntimeException();
         }
         teams.remove(team);
+    }
+
+    private boolean exists(Team team) {
+        return teams.stream().anyMatch(existingTeam -> existingTeam.getId().equals(team.getId()));
     }
 }

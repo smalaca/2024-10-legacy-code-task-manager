@@ -2,7 +2,7 @@ package com.smalaca.taskamanager.api.rest;
 
 import com.smalaca.acl.projectmanagement.FakeAclProjectRepository;
 import com.smalaca.acl.projectmanagement.FakeAclTeamRepository;
-import com.smalaca.acl.projectmanagement.ParallelRunProjectInteraction;
+import com.smalaca.parallelrun.projectmanagement.ParallelRunProjectInteraction;
 import com.smalaca.parallelrun.projectmanagement.ParallelRunProjectTestRecord;
 import com.smalaca.projectmanagement.ProjectManagementApi;
 import com.smalaca.taskamanager.dto.ProjectDto;
@@ -96,7 +96,7 @@ public class ProjectController {
     public ResponseEntity<Void> createProject(@RequestBody ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder) {
         ParallelRunProjectInteraction interaction = new ParallelRunProjectInteraction();
         ParallelRunProjectTestRecord record = createProjectLegacy(projectDto, copyOf(uriComponentsBuilder), interaction);
-        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(new FakeAclProjectRepository(interaction), new FakeAclTeamRepository())
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(new FakeAclProjectRepository(interaction), new FakeAclTeamRepository(interaction))
                 .createProject(projectDto, copyOf(uriComponentsBuilder));
 
         record.compareWithoutId(recordToCompare);
@@ -139,18 +139,19 @@ public class ProjectController {
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<ProjectDto> updateProject(@PathVariable("id") Long id, @RequestBody ProjectDto projectDto) {
-        ParallelRunProjectTestRecord record = updateProjectLegacy(id, projectDto);
-        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(new ParallelRunProjectInteraction());
-        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository()).updateProject(id, projectDto);
+        ParallelRunProjectInteraction interaction = new ParallelRunProjectInteraction();
+        ParallelRunProjectTestRecord record = updateProjectLegacy(id, projectDto, interaction);
+        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(interaction);
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository(interaction)).updateProject(id, projectDto);
 
         record.compareWithoutId(recordToCompare);
         return record.getResponse();
     }
 
-    private ParallelRunProjectTestRecord updateProjectLegacy(Long id, ProjectDto projectDto) {
+    private ParallelRunProjectTestRecord updateProjectLegacy(Long id, ProjectDto projectDto, ParallelRunProjectInteraction interaction) {
         ParallelRunProjectTestRecord<ProjectDto> record = new ParallelRunProjectTestRecord<>();
         try {
-            Project project = getProjectById(id);
+            Project project = getProjectById(id, interaction);
             project.setProjectStatus(ProjectStatus.valueOf(projectDto.getProjectStatus()));
 
             Project updated = projectRepository.save(project);
@@ -175,19 +176,20 @@ public class ProjectController {
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable("id") Long id) {
-        ParallelRunProjectTestRecord record = deleteProjectLegacy(id);
-        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(new ParallelRunProjectInteraction());
-        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository()).deleteProject(id);
+        ParallelRunProjectInteraction interaction = new ParallelRunProjectInteraction();
+        ParallelRunProjectTestRecord record = deleteProjectLegacy(id, interaction);
+        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(interaction);
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository(interaction)).deleteProject(id);
 
         record.compareWithoutId(recordToCompare);
 
         return record.getResponse();
     }
 
-    private ParallelRunProjectTestRecord deleteProjectLegacy(Long id) {
+    private ParallelRunProjectTestRecord deleteProjectLegacy(Long id, ParallelRunProjectInteraction interaction) {
         ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
         try {
-            Project project = getProjectById(id);
+            Project project = getProjectById(id, interaction);
             record.setProject(project);
             projectRepository.delete(project);
 
@@ -205,23 +207,25 @@ public class ProjectController {
     @PutMapping("/{projectId}/teams/{teamId}")
     @Transactional
     public ResponseEntity<Void> addTeam(@PathVariable Long projectId, @PathVariable Long teamId) {
-        ParallelRunProjectTestRecord<Void> record = addTeamLegacy(projectId, teamId);
-        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(new ParallelRunProjectInteraction());
-        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository()).addTeam(projectId, teamId);
+        ParallelRunProjectInteraction interaction = new ParallelRunProjectInteraction();
+        ParallelRunProjectTestRecord<Void> record = addTeamLegacy(projectId, teamId, interaction);
+        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(interaction);
+        FakeAclTeamRepository aclTeamRepository = new FakeAclTeamRepository(interaction);
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, aclTeamRepository).addTeam(projectId, teamId);
 
         record.compareWithoutId(recordToCompare);
 
         return record.getResponse();
     }
 
-    private ParallelRunProjectTestRecord<Void> addTeamLegacy(Long projectId, Long teamId) {
+    private ParallelRunProjectTestRecord<Void> addTeamLegacy(Long projectId, Long teamId, ParallelRunProjectInteraction interaction) {
         ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
 
         try {
-            Project project = getProjectById(projectId);
+            Project project = getProjectById(projectId, interaction);
             record.setProject(project);
             try {
-                Team team = getTeamById(teamId);
+                Team team = getTeamById(teamId, interaction);
 
                 project.addTeam(team);
                 team.setProject(project);
@@ -247,25 +251,33 @@ public class ProjectController {
         }
     }
 
+    private Project getProjectById(Long projectId, ParallelRunProjectInteraction interaction) {
+        Optional<Project> response = projectRepository.findById(projectId);
+        interaction.registerExistProjectById(projectId, response);
+        Project project = response.orElseThrow(ProjectNotFoundException::new);
+        return project;
+    }
+
     @DeleteMapping("/{projectId}/teams/{teamId}")
     @Transactional
     public ResponseEntity<Void> removeTeam(@PathVariable Long projectId, @PathVariable Long teamId) {
-        ParallelRunProjectTestRecord record = removeTeamLegacy(projectId, teamId);
-        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(new ParallelRunProjectInteraction());
-        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository()).removeTeam(projectId, teamId);
+        ParallelRunProjectInteraction interaction = new ParallelRunProjectInteraction();
+        ParallelRunProjectTestRecord record = removeTeamLegacy(projectId, teamId, interaction);
+        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(interaction);
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository(interaction)).removeTeam(projectId, teamId);
 
         record.compareWithoutId(recordToCompare);
         return record.getResponse();
     }
 
-    private ParallelRunProjectTestRecord removeTeamLegacy(Long projectId, Long teamId) {
+    private ParallelRunProjectTestRecord removeTeamLegacy(Long projectId, Long teamId, ParallelRunProjectInteraction interaction) {
         ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
         try {
-            Project project = getProjectById(projectId);
+            Project project = getProjectById(projectId, interaction);
             record.setProject(project);
 
             try {
-                Team team = getTeamById(teamId);
+                Team team = getTeamById(teamId, interaction);
 
                 project.removeTeam(team);
                 team.setProject(null);
@@ -291,9 +303,9 @@ public class ProjectController {
         return projectRepository.findById(id).orElseThrow(ProjectNotFoundException::new);
     }
 
-    private Team getTeamById(Long id) {
+    private Team getTeamById(Long id, ParallelRunProjectInteraction interaction) {
         Optional<Team> team = teamRepository.findById(id);
-
+        interaction.registerExistTeamById(id, team);
         if (team.isEmpty()) {
             throw new TeamNotFoundException();
         }
