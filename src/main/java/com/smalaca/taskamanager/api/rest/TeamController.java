@@ -2,10 +2,10 @@ package com.smalaca.taskamanager.api.rest;
 
 
 import com.google.common.collect.Iterables;
+import com.smalaca.cqrs.command.team.TeamUpdateService;
 import com.smalaca.taskamanager.dto.TeamDto;
 import com.smalaca.taskamanager.dto.TeamMembersDto;
 import com.smalaca.taskamanager.exception.TeamNotFoundException;
-import com.smalaca.taskamanager.model.embedded.Codename;
 import com.smalaca.taskamanager.model.entities.Team;
 import com.smalaca.taskamanager.model.entities.User;
 import com.smalaca.taskamanager.repository.TeamRepository;
@@ -104,42 +104,14 @@ public class TeamController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TeamDto> updateTeam(@PathVariable Long id, @RequestBody TeamDto teamDto) {
-        Team team;
+        TeamUpdateService teamUpdateService = new TeamUpdateService(teamRepository);
+        Optional<TeamDto> updatedTeam = teamUpdateService.updateTeam(id, teamDto);
 
-        try {
-            team = getTeamById(id);
-        } catch (TeamNotFoundException exception) {
+        if (updatedTeam.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(updatedTeam.get(), HttpStatus.OK);
         }
-
-        if (teamDto.getName() != null) {
-            team.setName(teamDto.getName());
-        }
-
-        if (teamDto.getCodenameShort() != null && teamDto.getCodenameFull() != null) {
-            Codename codename = new Codename();
-            codename.setShortName(teamDto.getCodenameShort());
-            codename.setFullName(teamDto.getCodenameFull());
-            team.setCodename(codename);
-        }
-
-        if (teamDto.getDescription() != null) {
-            team.setDescription(teamDto.getDescription());
-        }
-
-        Team updated = teamRepository.save(team);
-
-        TeamDto dto = new TeamDto();
-        dto.setId(updated.getId());
-        dto.setName(updated.getName());
-        if (updated.getCodename() != null) {
-            dto.setCodenameShort(updated.getCodename().getShortName());
-            dto.setCodenameFull(updated.getCodename().getFullName());
-        }
-
-        dto.setDescription(updated.getDescription());
-
-        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
     @PutMapping("/{id}/members")
