@@ -1,6 +1,8 @@
 package com.smalaca.taskamanager.api.rest;
 
 
+import com.smalaca.cqrs.command.story.StoryAddWatcherService;
+import com.smalaca.cqrs.command.story.StoryResponse;
 import com.smalaca.taskamanager.dto.AssigneeDto;
 import com.smalaca.taskamanager.dto.StakeholderDto;
 import com.smalaca.taskamanager.dto.StoryDto;
@@ -117,7 +119,7 @@ public class StoryController {
                 return watcherDto;
             }).collect(Collectors.toList());
             storyDto.setWatchers(watchers);
-            
+
             if (story.getAssignee() != null) {
                 AssigneeDto assigneeDto = new AssigneeDto();
                 assigneeDto.setFirstName(story.getAssignee().getFirstName());
@@ -316,42 +318,18 @@ public class StoryController {
 
     @PutMapping("/{id}/watcher")
     public ResponseEntity<Void> addWatcher(@PathVariable long id, @RequestBody WatcherDto dto) {
-        try {
-            Story story = findStoryBy(id);
+        StoryAddWatcherService service = new StoryAddWatcherService(storyRepository, userRepository);
+        StoryResponse storyResponse = service.addWatcherToStory(id, dto);
 
-            try {
-                User user = findUserBy(dto.getId());
-                Watcher watcher = new Watcher();
-                watcher.setLastName(user.getUserName().getLastName());
-                watcher.setFirstName(user.getUserName().getFirstName());
-
-                EmailAddress userEmailAddress = user.getEmailAddress();
-                PhoneNumber userPhoneNumber = user.getPhoneNumber();
-
-                if (userPhoneNumber != null) {
-                    PhoneNumber phoneNumber = new PhoneNumber();
-                    phoneNumber.setNumber(userPhoneNumber.getNumber());
-                    phoneNumber.setPrefix(userPhoneNumber.getPrefix());
-                    watcher.setPhoneNumber(phoneNumber);
-                }
-
-                if (userEmailAddress != null) {
-                    EmailAddress emailAddress = new EmailAddress();
-                    emailAddress.setEmailAddress(userEmailAddress.getEmailAddress());
-                    watcher.setEmailAddress(emailAddress);
-                }
-                story.addWatcher(watcher);
-
-                storyRepository.save(story);
-
-            } catch (UserNotFoundException exception) {
-                return new ResponseEntity<>(HttpStatus.FAILED_DEPENDENCY);
-            }
-
-            return ResponseEntity.ok().build();
-        } catch (StoryDoesNotExistException exception) {
+        if (storyResponse.doesNotStoryExist()) {
             return ResponseEntity.notFound().build();
         }
+
+        if (storyResponse.isUserDoesNotExist()) {
+            return new ResponseEntity<>(HttpStatus.FAILED_DEPENDENCY);
+        }
+
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{storyId}/watcher/{watcherId}")
