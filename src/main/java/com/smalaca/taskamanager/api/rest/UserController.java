@@ -1,7 +1,8 @@
 package com.smalaca.taskamanager.api.rest;
 
-import com.smalaca.acl.usermanagement.FakeAclUserRepository;
+import com.smalaca.acl.usermanagement.AclUserRepository;
 import com.smalaca.parallelrun.usermanagement.ParallelRunUserTestRecord;
+import com.smalaca.parallelrun.usermanagement.ParallelRunInteractionRecord;
 import com.smalaca.taskamanager.dto.UserDto;
 import com.smalaca.taskamanager.exception.UserNotFoundException;
 import com.smalaca.taskamanager.model.embedded.EmailAddress;
@@ -110,18 +111,25 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
-        ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, uriComponentsBuilder.cloneBuilder());
-        ParallelRunUserTestRecord recordToCompare = new UserManagementApi(new FakeAclUserRepository())
-                .createUser(userDto, uriComponentsBuilder.cloneBuilder());
+        ParallelRunInteractionRecord interaction = new ParallelRunInteractionRecord();
+        ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, copyOf(uriComponentsBuilder), interaction);
+        AclUserRepository aclUserRepository = new AclUserRepository(userRepository, interaction);
+        ParallelRunUserTestRecord recordToCompare = new UserManagementApi(aclUserRepository)
+                .createUser(userDto, copyOf(uriComponentsBuilder));
 
         record.compareWithoutUserId(recordToCompare);
 
         return record.getResponse();
     }
 
-    private ParallelRunUserTestRecord createUserInLegacyCode(UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
+    private UriComponentsBuilder copyOf(UriComponentsBuilder uriComponentsBuilder) {
+        return uriComponentsBuilder == null ? null : uriComponentsBuilder.cloneBuilder();
+    }
+
+    private ParallelRunUserTestRecord createUserInLegacyCode(
+            UserDto userDto, UriComponentsBuilder uriComponentsBuilder, ParallelRunInteractionRecord interaction) {
         ParallelRunUserTestRecord record = new ParallelRunUserTestRecord();
-        if (exists(userDto)) {
+        if (exists(userDto, interaction)) {
             ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.CONFLICT);
             record.setResponse(response);
             return record;
@@ -146,8 +154,11 @@ public class UserController {
         }
     }
 
-    private boolean exists(UserDto userDto) {
-        return !userRepository.findByUserNameFirstNameAndUserNameLastName(userDto.getFirstName(), userDto.getLastName()).isEmpty();
+    private boolean exists(UserDto userDto, ParallelRunInteractionRecord interaction) {
+        Optional<User> response = userRepository.findByUserNameFirstNameAndUserNameLastName(userDto.getFirstName(), userDto.getLastName());
+        interaction.registerExistsUser(userDto.getFirstName(), userDto.getLastName(), response);
+
+        return !response.isEmpty();
     }
 
     @PutMapping(value = "/{id}")

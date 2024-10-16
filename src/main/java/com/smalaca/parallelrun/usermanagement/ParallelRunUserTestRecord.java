@@ -32,6 +32,10 @@ public class ParallelRunUserTestRecord {
     }
 
     private boolean isUserWithoutIdEqual(ParallelRunUserTestRecord record) {
+        if (user == null && record.user == null) {
+            return true;
+        }
+
         return this.user.isUserWithoutIdEqual(record.user);
     }
 

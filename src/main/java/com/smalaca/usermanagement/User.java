@@ -26,7 +26,7 @@ public class User {
         return userName;
     }
 
-    void setUserName(UserName userName) {
+    public void setUserName(UserName userName) {
         this.userName = userName;
     }
 
@@ -34,7 +34,7 @@ public class User {
         return login;
     }
 
-    void setLogin(String login) {
+    public void setLogin(String login) {
         this.login = login;
     }
 
@@ -42,7 +42,7 @@ public class User {
         return password;
     }
 
-    void setPassword(String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
@@ -50,11 +50,15 @@ public class User {
         return teamRole;
     }
 
-    void setTeamRole(TeamRole teamRole) {
+    public void setTeamRole(TeamRole teamRole) {
         this.teamRole = teamRole;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }
