@@ -1,10 +1,13 @@
 package com.smalaca.parallelrun.projectmanagement;
 
 import com.smalaca.taskamanager.model.entities.Project;
+import com.smalaca.taskamanager.model.entities.Team;
 import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @EqualsAndHashCode
 class ProjectToCompare {
@@ -20,7 +23,7 @@ class ProjectToCompare {
         compare.name = project.getName();
         compare.projectStatus = project.getProjectStatus().name();
         compare.productOwnerId = project.getProductOwner() == null ? null : project.getProductOwner().getId();
-//        compare.teams = project.getTeams().stream().map(Team::getId).collect(toList());
+        compare.teams = project.getTeams().stream().map(Team::getId).collect(toList());
 
         return compare;
     }
@@ -31,7 +34,7 @@ class ProjectToCompare {
         compare.name = project.getName();
         compare.projectStatus = project.getProjectStatus().name();
         compare.productOwnerId = project.getProductOwner() == null ? null : project.getProductOwner().getId();
-//        compare.teams = project.getTeams().stream().map(Team::getId).collect(toList());
+        compare.teams = project.getTeams().stream().map(com.smalaca.projectmanagement.Team::getId).collect(toList());
 
         return compare;
     }

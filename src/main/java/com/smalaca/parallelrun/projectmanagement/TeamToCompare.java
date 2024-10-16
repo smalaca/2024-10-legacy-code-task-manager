@@ -15,4 +15,12 @@ class TeamToCompare {
 
         return compare;
     }
+
+    static TeamToCompare createFrom(com.smalaca.projectmanagement.Team team) {
+        TeamToCompare compare = new TeamToCompare();
+        compare.id = team.getId();
+        compare.projectId = team.getProject() == null ? null : team.getProject().getId();
+
+        return compare;
+    }
 }

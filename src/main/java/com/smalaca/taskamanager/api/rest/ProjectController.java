@@ -1,6 +1,7 @@
 package com.smalaca.taskamanager.api.rest;
 
 import com.smalaca.acl.projectmanagement.FakeAclProjectRepository;
+import com.smalaca.acl.projectmanagement.FakeAclTeamRepository;
 import com.smalaca.parallelrun.projectmanagement.ParallelRunProjectTestRecord;
 import com.smalaca.projectmanagement.ProjectManagementApi;
 import com.smalaca.taskamanager.dto.ProjectDto;
@@ -40,7 +41,7 @@ public class ProjectController {
     public ProjectController(ProjectRepository projectRepository, TeamRepository teamRepository) {
         this.projectRepository = projectRepository;
         this.teamRepository = teamRepository;
-        projectManagementApi = new ProjectManagementApi(new FakeAclProjectRepository());
+        projectManagementApi = new ProjectManagementApi(new FakeAclProjectRepository(), new FakeAclTeamRepository());
     }
 
     @GetMapping
@@ -195,6 +196,10 @@ public class ProjectController {
     @Transactional
     public ResponseEntity<Void> addTeam(@PathVariable Long projectId, @PathVariable Long teamId) {
         ParallelRunProjectTestRecord<Void> record = addTeamLegacy(projectId, teamId);
+        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.addTeam(projectId, teamId);
+
+        record.compareWithoutId(recordToCompare);
+
         return record.getResponse();
     }
 

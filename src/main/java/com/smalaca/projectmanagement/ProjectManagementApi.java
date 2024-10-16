@@ -7,11 +7,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Optional;
+
 public class ProjectManagementApi {
     private final ProjectRepository projectRepository;
+    private final TeamRepository teamRepository;
 
-    public ProjectManagementApi(ProjectRepository projectRepository) {
+    public ProjectManagementApi(ProjectRepository projectRepository, TeamRepository teamRepository) {
         this.projectRepository = projectRepository;
+        this.teamRepository = teamRepository;
     }
 
     public ParallelRunProjectTestRecord createProject(ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder) {
@@ -85,5 +89,47 @@ public class ProjectManagementApi {
             record.setResponse(response);
             return record;
         }
+    }
+
+    public ParallelRunProjectTestRecord addTeam(Long projectId, Long teamId) {
+        ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
+
+        try {
+            Project project = getProjectById(projectId);
+            record.setProject(project);
+            try {
+                Team team = getTeamById(teamId);
+
+                project.addTeam(team);
+                team.setProject(project);
+                record.setProject(project);
+                record.setTeam(team);
+
+                projectRepository.save(project);
+                teamRepository.save(team);
+
+                ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
+                record.setResponse(response);
+                return record;
+            } catch (TeamNotFoundException exception) {
+                ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                record.setResponse(response);
+                return record;
+            }
+        } catch (ProjectNotFoundException exception) {
+            ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            record.setResponse(response);
+            return record;
+        }
+    }
+
+    private Team getTeamById(Long id) {
+        Optional<Team> team = teamRepository.findById(id);
+
+        if (team.isEmpty()) {
+            throw new TeamNotFoundException();
+        }
+
+        return team.get();
     }
 }
