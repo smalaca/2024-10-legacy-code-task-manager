@@ -1,6 +1,7 @@
 package com.smalaca.taskamanager.api.rest;
 
 
+import com.smalaca.cqrs.acl.story.AclWatcherDomainModelRepository;
 import com.smalaca.cqrs.command.story.StoryAddWatcherService;
 import com.smalaca.cqrs.command.story.StoryResponse;
 import com.smalaca.taskamanager.dto.AssigneeDto;
@@ -318,7 +319,7 @@ public class StoryController {
 
     @PutMapping("/{id}/watcher")
     public ResponseEntity<Void> addWatcher(@PathVariable long id, @RequestBody WatcherDto dto) {
-        StoryAddWatcherService service = new StoryAddWatcherService(storyRepository, userRepository);
+        StoryAddWatcherService service = new StoryAddWatcherService(storyRepository, new AclWatcherDomainModelRepository(userRepository));
         StoryResponse storyResponse = service.addWatcherToStory(id, dto);
 
         if (storyResponse.doesNotStoryExist()) {
