@@ -20,4 +20,9 @@ public class FakeAclProjectRepository implements ProjectRepository {
     public Optional<Project> findById(Long id) {
         return Optional.empty();
     }
+
+    @Override
+    public void delete(Project project) {
+
+    }
 }

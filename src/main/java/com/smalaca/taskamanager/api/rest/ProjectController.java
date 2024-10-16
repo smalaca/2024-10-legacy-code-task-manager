@@ -166,6 +166,10 @@ public class ProjectController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable("id") Long id) {
         ParallelRunProjectTestRecord record = deleteProjectLegacy(id);
+        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.deleteProject(id);
+
+        record.compareWithoutId(recordToCompare);
+
         return record.getResponse();
     }
 

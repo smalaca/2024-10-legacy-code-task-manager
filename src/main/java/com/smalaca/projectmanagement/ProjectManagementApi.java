@@ -69,4 +69,21 @@ public class ProjectManagementApi {
     private Project getProjectById(Long id) {
         return projectRepository.findById(id).orElseThrow(ProjectNotFoundException::new);
     }
+
+    public ParallelRunProjectTestRecord deleteProject(Long id) {
+        ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
+        try {
+            Project project = getProjectById(id);
+            record.setProject(project);
+            projectRepository.delete(project);
+
+            ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);
+            record.setResponse(response);
+            return record;
+        } catch (ProjectNotFoundException exception) {
+            ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            record.setResponse(response);
+            return record;
+        }
+    }
 }
