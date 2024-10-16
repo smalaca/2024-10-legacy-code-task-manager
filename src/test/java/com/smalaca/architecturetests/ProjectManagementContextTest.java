@@ -8,24 +8,24 @@ import static com.tngtech.archunit.core.importer.ImportOption.Predefined.DO_NOT_
 import static com.tngtech.archunit.core.importer.ImportOption.Predefined.DO_NOT_INCLUDE_TESTS;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
-public class UserManagementContextTest {
-    private static final String USERMANAGEMENT_CONTEXT = "com.smalaca.usermanagement";
+public class ProjectManagementContextTest {
+    private static final String PROJECT_MANAGEMENT_CONTEXT = "com.smalaca.projectmanagement";
 
     @Test
-    void userManagementContextShouldBeIndependent() {
+    void projectManagementContextShouldBeIndependent() {
         classes().that()
-                .resideInAPackage(USERMANAGEMENT_CONTEXT)
+                .resideInAPackage(PROJECT_MANAGEMENT_CONTEXT)
                 .should().onlyDependOnClassesThat()
                 .resideInAnyPackage(
                         javaPackages(), jpaPackages(), springFrameworkPackages(), parallelRunPackages(),
-                        USERMANAGEMENT_CONTEXT)
+                        PROJECT_MANAGEMENT_CONTEXT)
 
                 .because("0001-component-based-architecture.md")
-                .check(userManagementClasses());
+                .check(projectManagementClasses());
     }
 
-    public static JavaClasses userManagementClasses() {
-        return classesFrom(USERMANAGEMENT_CONTEXT);
+    public static JavaClasses projectManagementClasses() {
+        return classesFrom(PROJECT_MANAGEMENT_CONTEXT);
     }
 
     private static JavaClasses classesFrom(String packageName) {
@@ -36,7 +36,7 @@ public class UserManagementContextTest {
     }
 
     private String parallelRunPackages() {
-        return allPackagesIn("com.smalaca.parallelrun.usermanagement");
+        return allPackagesIn("com.smalaca.parallelrun.projectmanagement");
     }
 
     private String javaPackages() {
