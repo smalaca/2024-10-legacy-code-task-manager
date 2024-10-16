@@ -33,8 +33,20 @@ public class ParallelRunProjectTestRecord<T> {
         }
     }
 
+    public void compareWithoutId(ParallelRunProjectTestRecord record) {
+        if (isRequestEqual(record) && isProjectEqualWithoutId(record) && isTeamEqual(record)) {
+            System.out.println("RECORDS ARE THE SAME");
+        } else {
+            System.out.println("RECORDS ARE NOT THE SAME");
+        }
+    }
+
     private boolean isTeamEqual(ParallelRunProjectTestRecord record) {
         return (record.team == null && this.team == null) || record.team.equals(this.team);
+    }
+
+    private boolean isProjectEqualWithoutId(ParallelRunProjectTestRecord record) {
+        return record.project.isEqualWithoutId(this.project);
     }
 
     private boolean isProjectEqual(ParallelRunProjectTestRecord record) {

@@ -27,4 +27,19 @@ class ProjectToCompare {
 
         return compare;
     }
+
+    boolean isEqualWithoutId(ProjectToCompare compare) {
+        return areEqual(name, compare.name)
+                && areEqual(projectStatus, compare.projectStatus)
+                && areEqual(productOwnerId, compare.productOwnerId)
+                && teams.equals(compare.teams);
+    }
+
+    private boolean areEqual(String value, String toCompare) {
+        return (value == null && toCompare == null) || value.equals(toCompare);
+    }
+
+    private boolean areEqual(Long value, Long toCompare) {
+        return (value == null && toCompare == null) || value.equals(toCompare);
+    }
 }
