@@ -1,6 +1,6 @@
 package com.smalaca.acl.usermanagement;
 
-import com.smalaca.parallelrun.usermanagement.ParallelRunInteractionRecord;
+import com.smalaca.parallelrun.usermanagement.ParallelRunUserInteractionRecord;
 import com.smalaca.usermanagement.User;
 import com.smalaca.usermanagement.UserRepository;
 
@@ -8,11 +8,11 @@ import java.util.Optional;
 
 public class AclUserRepository implements UserRepository {
     private final com.smalaca.taskamanager.repository.UserRepository userRepository;
-    private final ParallelRunInteractionRecord interaction;
+    private final ParallelRunUserInteractionRecord interaction;
 
     public AclUserRepository(
             com.smalaca.taskamanager.repository.UserRepository userRepository,
-            ParallelRunInteractionRecord interaction) {
+            ParallelRunUserInteractionRecord interaction) {
         this.userRepository = userRepository;
         this.interaction = interaction;
     }

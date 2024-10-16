@@ -6,9 +6,15 @@ import com.smalaca.projectmanagement.ProjectRepository;
 import java.util.Optional;
 
 public class FakeAclProjectRepository implements ProjectRepository {
+    private final ParallelRunProjectInteraction interaction;
+
+    public FakeAclProjectRepository(ParallelRunProjectInteraction interaction) {
+        this.interaction = interaction;
+    }
+
     @Override
     public Optional<Project> findByName(String name) {
-        return Optional.empty();
+        return interaction.findProjectByName(name);
     }
 
     @Override

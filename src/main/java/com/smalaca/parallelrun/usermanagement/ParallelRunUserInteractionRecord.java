@@ -6,7 +6,7 @@ import com.smalaca.usermanagement.UserName;
 
 import java.util.Optional;
 
-public class ParallelRunInteractionRecord {
+public class ParallelRunUserInteractionRecord {
     private String firstName;
     private String lastName;
     private Optional<User> response;

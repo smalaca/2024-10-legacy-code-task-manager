@@ -2,7 +2,7 @@ package com.smalaca.taskamanager.api.rest;
 
 import com.smalaca.acl.usermanagement.AclUserRepository;
 import com.smalaca.parallelrun.usermanagement.ParallelRunUserTestRecord;
-import com.smalaca.parallelrun.usermanagement.ParallelRunInteractionRecord;
+import com.smalaca.parallelrun.usermanagement.ParallelRunUserInteractionRecord;
 import com.smalaca.taskamanager.dto.UserDto;
 import com.smalaca.taskamanager.exception.UserNotFoundException;
 import com.smalaca.taskamanager.model.embedded.EmailAddress;
@@ -111,7 +111,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
-        ParallelRunInteractionRecord interaction = new ParallelRunInteractionRecord();
+        ParallelRunUserInteractionRecord interaction = new ParallelRunUserInteractionRecord();
         ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, copyOf(uriComponentsBuilder), interaction);
         AclUserRepository aclUserRepository = new AclUserRepository(userRepository, interaction);
         ParallelRunUserTestRecord recordToCompare = new UserManagementApi(aclUserRepository)
@@ -127,7 +127,7 @@ public class UserController {
     }
 
     private ParallelRunUserTestRecord createUserInLegacyCode(
-            UserDto userDto, UriComponentsBuilder uriComponentsBuilder, ParallelRunInteractionRecord interaction) {
+            UserDto userDto, UriComponentsBuilder uriComponentsBuilder, ParallelRunUserInteractionRecord interaction) {
         ParallelRunUserTestRecord record = new ParallelRunUserTestRecord();
         if (exists(userDto, interaction)) {
             ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -154,7 +154,7 @@ public class UserController {
         }
     }
 
-    private boolean exists(UserDto userDto, ParallelRunInteractionRecord interaction) {
+    private boolean exists(UserDto userDto, ParallelRunUserInteractionRecord interaction) {
         Optional<User> response = userRepository.findByUserNameFirstNameAndUserNameLastName(userDto.getFirstName(), userDto.getLastName());
         interaction.registerExistsUser(userDto.getFirstName(), userDto.getLastName(), response);
 

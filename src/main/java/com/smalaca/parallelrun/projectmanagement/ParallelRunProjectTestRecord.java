@@ -54,11 +54,11 @@ public class ParallelRunProjectTestRecord<T> {
     }
 
     private boolean isProjectEqualWithoutId(ParallelRunProjectTestRecord record) {
-        return record.project.isEqualWithoutId(this.project);
+        return (record.project == null && this.project == null) || record.project.isEqualWithoutId(this.project);
     }
 
     private boolean isProjectEqual(ParallelRunProjectTestRecord record) {
-        return record.project.equals(this.project);
+        return (record.project == null && this.project == null) || record.project.equals(this.project);
     }
 
     private boolean isRequestEqual(ParallelRunProjectTestRecord record) {

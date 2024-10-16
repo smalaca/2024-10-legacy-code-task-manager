@@ -2,6 +2,7 @@ package com.smalaca.taskamanager.api.rest;
 
 import com.smalaca.acl.projectmanagement.FakeAclProjectRepository;
 import com.smalaca.acl.projectmanagement.FakeAclTeamRepository;
+import com.smalaca.acl.projectmanagement.ParallelRunProjectInteraction;
 import com.smalaca.parallelrun.projectmanagement.ParallelRunProjectTestRecord;
 import com.smalaca.projectmanagement.ProjectManagementApi;
 import com.smalaca.taskamanager.dto.ProjectDto;
@@ -36,12 +37,10 @@ import java.util.stream.Collectors;
 public class ProjectController {
     private final ProjectRepository projectRepository;
     private final TeamRepository teamRepository;
-    private final ProjectManagementApi projectManagementApi;
 
     public ProjectController(ProjectRepository projectRepository, TeamRepository teamRepository) {
         this.projectRepository = projectRepository;
         this.teamRepository = teamRepository;
-        projectManagementApi = new ProjectManagementApi(new FakeAclProjectRepository(), new FakeAclTeamRepository());
     }
 
     @GetMapping
@@ -95,17 +94,23 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<Void> createProject(@RequestBody ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder) {
-        ParallelRunProjectTestRecord record = createProjectLegacy(projectDto, uriComponentsBuilder.cloneBuilder());
-        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.createProject(projectDto, uriComponentsBuilder.cloneBuilder());
+        ParallelRunProjectInteraction interaction = new ParallelRunProjectInteraction();
+        ParallelRunProjectTestRecord record = createProjectLegacy(projectDto, copyOf(uriComponentsBuilder), interaction);
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(new FakeAclProjectRepository(interaction), new FakeAclTeamRepository())
+                .createProject(projectDto, copyOf(uriComponentsBuilder));
 
         record.compareWithoutId(recordToCompare);
 
         return record.getResponse();
     }
 
-    private ParallelRunProjectTestRecord createProjectLegacy(ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder) {
+    private UriComponentsBuilder copyOf(UriComponentsBuilder uriComponentsBuilder) {
+        return uriComponentsBuilder == null ? null : uriComponentsBuilder.cloneBuilder();
+    }
+
+    private ParallelRunProjectTestRecord createProjectLegacy(ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder, ParallelRunProjectInteraction interaction) {
         ParallelRunProjectTestRecord record = new ParallelRunProjectTestRecord();
-        if (exists(projectDto)) {
+        if (exists(projectDto, interaction)) {
             ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.CONFLICT);
             record.setResponse(response);
             return record;
@@ -125,14 +130,18 @@ public class ProjectController {
         }
     }
 
-    private boolean exists(ProjectDto projectDto) {
-        return !projectRepository.findByName(projectDto.getName()).isEmpty();
+    private boolean exists(ProjectDto projectDto, ParallelRunProjectInteraction interaction) {
+        Optional<Project> project = projectRepository.findByName(projectDto.getName());
+        interaction.registerExistProjectByName(projectDto.getName(), project);
+
+        return !project.isEmpty();
     }
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<ProjectDto> updateProject(@PathVariable("id") Long id, @RequestBody ProjectDto projectDto) {
         ParallelRunProjectTestRecord record = updateProjectLegacy(id, projectDto);
-        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.updateProject(id, projectDto);
+        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(new ParallelRunProjectInteraction());
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository()).updateProject(id, projectDto);
 
         record.compareWithoutId(recordToCompare);
         return record.getResponse();
@@ -167,7 +176,8 @@ public class ProjectController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable("id") Long id) {
         ParallelRunProjectTestRecord record = deleteProjectLegacy(id);
-        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.deleteProject(id);
+        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(new ParallelRunProjectInteraction());
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository()).deleteProject(id);
 
         record.compareWithoutId(recordToCompare);
 
@@ -196,7 +206,8 @@ public class ProjectController {
     @Transactional
     public ResponseEntity<Void> addTeam(@PathVariable Long projectId, @PathVariable Long teamId) {
         ParallelRunProjectTestRecord<Void> record = addTeamLegacy(projectId, teamId);
-        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.addTeam(projectId, teamId);
+        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(new ParallelRunProjectInteraction());
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository()).addTeam(projectId, teamId);
 
         record.compareWithoutId(recordToCompare);
 
@@ -240,7 +251,8 @@ public class ProjectController {
     @Transactional
     public ResponseEntity<Void> removeTeam(@PathVariable Long projectId, @PathVariable Long teamId) {
         ParallelRunProjectTestRecord record = removeTeamLegacy(projectId, teamId);
-        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.removeTeam(projectId, teamId);
+        FakeAclProjectRepository aclProjectRepository = new FakeAclProjectRepository(new ParallelRunProjectInteraction());
+        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(aclProjectRepository, new FakeAclTeamRepository()).removeTeam(projectId, teamId);
 
         record.compareWithoutId(recordToCompare);
         return record.getResponse();
