@@ -1,28 +1,26 @@
 package com.smalaca.cqrs.command.team;
 
+import com.smalaca.cqrs.acl.team.AclTeamDomainModelRepository;
 import com.smalaca.taskamanager.dto.TeamDto;
-import com.smalaca.taskamanager.model.entities.Team;
-import com.smalaca.taskamanager.repository.TeamRepository;
 
 import java.util.Optional;
 
 public class TeamUpdateService {
-    private final TeamRepository teamRepository;
+    private final TeamDomainModelRepository teamDomainModelRepository;
 
-    public TeamUpdateService(TeamRepository teamRepository) {
-        this.teamRepository = teamRepository;
+    public TeamUpdateService(AclTeamDomainModelRepository teamDomainModelRepository) {
+        this.teamDomainModelRepository = teamDomainModelRepository;
     }
 
     public Optional<TeamDto> updateTeam(Long id, TeamDto teamDto) {
-        Optional<Team> found = teamRepository.findById(id);
+        Optional<TeamDomainModel> found = teamDomainModelRepository.findById(id);
 
         if (found.isPresent()) {
-            TeamDomainModel teamDomainModel = new TeamDomainModel(found.get());
+            TeamDomainModel teamDomainModel = found.get();
             teamDomainModel.updateBasicInformation(teamDto);
+            teamDomainModelRepository.save(teamDomainModel);
 
-            teamRepository.save(teamDomainModel.getTeam());
             TeamDto dto = teamDomainModel.asDto();
-
             return Optional.of(dto);
         }
 

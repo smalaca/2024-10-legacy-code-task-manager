@@ -2,6 +2,7 @@ package com.smalaca.taskamanager.api.rest;
 
 
 import com.google.common.collect.Iterables;
+import com.smalaca.cqrs.acl.team.AclTeamDomainModelRepository;
 import com.smalaca.cqrs.command.team.TeamUpdateService;
 import com.smalaca.taskamanager.dto.TeamDto;
 import com.smalaca.taskamanager.dto.TeamMembersDto;
@@ -104,7 +105,7 @@ public class TeamController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TeamDto> updateTeam(@PathVariable Long id, @RequestBody TeamDto teamDto) {
-        TeamUpdateService teamUpdateService = new TeamUpdateService(teamRepository);
+        TeamUpdateService teamUpdateService = new TeamUpdateService(new AclTeamDomainModelRepository(teamRepository));
         Optional<TeamDto> updatedTeam = teamUpdateService.updateTeam(id, teamDto);
 
         if (updatedTeam.isEmpty()) {

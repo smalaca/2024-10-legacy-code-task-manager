@@ -28,7 +28,7 @@ public class TeamDomainModel {
         }
     }
 
-    Team getTeam() {
+    public Team getTeam() {
         return team;
     }
 
