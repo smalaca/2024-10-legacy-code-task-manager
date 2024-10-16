@@ -123,4 +123,8 @@ public class Project {
                 .append(name)
                 .toHashCode();
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

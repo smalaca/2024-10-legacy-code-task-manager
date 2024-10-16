@@ -80,4 +80,8 @@ public class ProductOwner {
             throw new RuntimeException();
         }
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

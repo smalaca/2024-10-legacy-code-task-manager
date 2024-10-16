@@ -117,4 +117,8 @@ public class Team {
                 .append(description)
                 .toHashCode();
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

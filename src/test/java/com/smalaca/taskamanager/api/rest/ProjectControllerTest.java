@@ -7,6 +7,7 @@ import com.smalaca.taskamanager.model.entities.Team;
 import com.smalaca.taskamanager.model.enums.ProjectStatus;
 import com.smalaca.taskamanager.repository.ProjectRepository;
 import com.smalaca.taskamanager.repository.TeamRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,11 @@ class ProjectControllerTest {
     private final ProjectRepository projectRepository = mock(ProjectRepository.class);
     private final TeamRepository teamRepository = mock(TeamRepository.class);
     private final ProjectController controller = new ProjectController(projectRepository, teamRepository);
+
+    @BeforeEach
+    void enableNewCode() {
+        controller.setEnableNewCode(true);
+    }
 
     @Test
     void shouldFindAllProjects() {
