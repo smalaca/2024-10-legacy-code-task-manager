@@ -132,4 +132,33 @@ public class ProjectManagementApi {
 
         return team.get();
     }
+
+    public ParallelRunProjectTestRecord removeTeam(Long projectId, Long teamId) {
+        ParallelRunProjectTestRecord<Void> record = new ParallelRunProjectTestRecord<>();
+        try {
+            Project project = getProjectById(projectId);
+            record.setProject(project);
+
+            try {
+                Team team = getTeamById(teamId);
+
+                project.removeTeam(team);
+                team.setProject(null);
+
+                projectRepository.save(project);
+                teamRepository.save(team);
+                record.setProject(project);
+                record.setTeam(team);
+
+                record.setResponse(new ResponseEntity<>(HttpStatus.OK));
+            } catch (TeamNotFoundException exception) {
+                record.setResponse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            }
+
+        } catch (ProjectNotFoundException exception) {
+            record.setResponse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        }
+
+        return record;
+    }
 }

@@ -60,4 +60,11 @@ public class Project {
             teams.add(team);
         }
     }
+
+    void removeTeam(Team team) {
+        if (!teams.contains(team)) {
+            throw new RuntimeException();
+        }
+        teams.remove(team);
+    }
 }

@@ -240,6 +240,9 @@ public class ProjectController {
     @Transactional
     public ResponseEntity<Void> removeTeam(@PathVariable Long projectId, @PathVariable Long teamId) {
         ParallelRunProjectTestRecord record = removeTeamLegacy(projectId, teamId);
+        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.removeTeam(projectId, teamId);
+
+        record.compareWithoutId(recordToCompare);
         return record.getResponse();
     }
 
