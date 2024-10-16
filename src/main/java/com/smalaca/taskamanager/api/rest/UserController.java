@@ -11,6 +11,7 @@ import com.smalaca.taskamanager.model.embedded.UserName;
 import com.smalaca.taskamanager.model.entities.User;
 import com.smalaca.taskamanager.model.enums.TeamRole;
 import com.smalaca.taskamanager.repository.UserRepository;
+import com.smalaca.usermanagement.UserDataTransferObject;
 import com.smalaca.usermanagement.UserManagementApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -115,11 +116,23 @@ public class UserController {
         ParallelRunUserTestRecord record = createUserInLegacyCode(userDto, copyOf(uriComponentsBuilder), interaction);
         AclUserRepository aclUserRepository = new AclUserRepository(userRepository, interaction);
         ParallelRunUserTestRecord recordToCompare = new UserManagementApi(aclUserRepository)
-                .createUser(userDto, copyOf(uriComponentsBuilder));
+                .createUser(asUserDataTransferObject(userDto), copyOf(uriComponentsBuilder));
 
         record.compareWithoutUserId(recordToCompare);
 
         return record.getResponse();
+    }
+
+    private UserDataTransferObject asUserDataTransferObject(UserDto userDto) {
+        UserDataTransferObject dto = new UserDataTransferObject();
+        dto.setId(userDto.getId());
+        dto.setFirstName(userDto.getFirstName());
+        dto.setLastName(userDto.getLastName());
+        dto.setLogin(userDto.getLogin());
+        dto.setPassword(userDto.getPassword());
+        dto.setTeamRole(userDto.getTeamRole());
+
+        return dto;
     }
 
     private UriComponentsBuilder copyOf(UriComponentsBuilder uriComponentsBuilder) {

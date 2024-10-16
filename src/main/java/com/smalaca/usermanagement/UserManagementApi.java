@@ -1,7 +1,6 @@
 package com.smalaca.usermanagement;
 
 import com.smalaca.parallelrun.usermanagement.ParallelRunUserTestRecord;
-import com.smalaca.taskamanager.dto.UserDto;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,7 @@ public class UserManagementApi {
         this.userRepository = userRepository;
     }
 
-    public ParallelRunUserTestRecord createUser(UserDto userDto, UriComponentsBuilder uriComponentsBuilder) {
+    public ParallelRunUserTestRecord createUser(UserDataTransferObject userDto, UriComponentsBuilder uriComponentsBuilder) {
         ParallelRunUserTestRecord record = new ParallelRunUserTestRecord();
         if (exists(userDto)) {
             ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -41,7 +40,7 @@ public class UserManagementApi {
         }
     }
 
-    private boolean exists(UserDto userDto) {
+    private boolean exists(UserDataTransferObject userDto) {
         return !userRepository.findByUserNameFirstNameAndUserNameLastName(userDto.getFirstName(), userDto.getLastName()).isEmpty();
     }
 }
