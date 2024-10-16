@@ -15,4 +15,9 @@ public class FakeAclProjectRepository implements ProjectRepository {
     public Project save(Project project) {
         return project;
     }
+
+    @Override
+    public Optional<Project> findById(Long id) {
+        return Optional.empty();
+    }
 }

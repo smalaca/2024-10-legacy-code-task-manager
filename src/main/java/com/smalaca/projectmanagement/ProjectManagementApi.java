@@ -39,4 +39,34 @@ public class ProjectManagementApi {
     private boolean exists(ProjectDto projectDto) {
         return !projectRepository.findByName(projectDto.getName()).isEmpty();
     }
+
+    public ParallelRunProjectTestRecord updateProject(Long id, ProjectDto projectDto) {
+        ParallelRunProjectTestRecord<ProjectDto> record = new ParallelRunProjectTestRecord<>();
+        try {
+            Project project = getProjectById(id);
+            project.setProjectStatus(ProjectStatus.valueOf(projectDto.getProjectStatus()));
+
+            Project updated = projectRepository.save(project);
+            record.setProject(updated);
+
+            ProjectDto response = new ProjectDto();
+            response.setId(updated.getId());
+            response.setName(updated.getName());
+            response.setProjectStatus(updated.getProjectStatus().name());
+
+            if (updated.getProductOwner() != null) {
+                response.setProductOwnerId(updated.getProductOwner().getId());
+            }
+
+            record.setResponse(new ResponseEntity<>(response, HttpStatus.OK));
+            return record;
+        } catch (ProjectNotFoundException exception) {
+            record.setResponse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            return record;
+        }
+    }
+
+    private Project getProjectById(Long id) {
+        return projectRepository.findById(id).orElseThrow(ProjectNotFoundException::new);
+    }
 }

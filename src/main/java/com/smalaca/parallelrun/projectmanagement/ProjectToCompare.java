@@ -18,8 +18,8 @@ class ProjectToCompare {
         ProjectToCompare compare = new ProjectToCompare();
         compare.id = project.getId();
         compare.name = project.getName();
-//        compare.projectStatus = project.getProjectStatus().name();
-//        compare.productOwnerId = project.getProductOwner() == null ? null : project.getProductOwner().getId();
+        compare.projectStatus = project.getProjectStatus().name();
+        compare.productOwnerId = project.getProductOwner() == null ? null : project.getProductOwner().getId();
 //        compare.teams = project.getTeams().stream().map(Team::getId).collect(toList());
 
         return compare;
@@ -29,8 +29,8 @@ class ProjectToCompare {
         ProjectToCompare compare = new ProjectToCompare();
         compare.id = project.getId();
         compare.name = project.getName();
-//        compare.projectStatus = project.getProjectStatus().name();
-//        compare.productOwnerId = project.getProductOwner() == null ? null : project.getProductOwner().getId();
+        compare.projectStatus = project.getProjectStatus().name();
+        compare.productOwnerId = project.getProductOwner() == null ? null : project.getProductOwner().getId();
 //        compare.teams = project.getTeams().stream().map(Team::getId).collect(toList());
 
         return compare;

@@ -35,10 +35,12 @@ import java.util.stream.Collectors;
 public class ProjectController {
     private final ProjectRepository projectRepository;
     private final TeamRepository teamRepository;
+    private final ProjectManagementApi projectManagementApi;
 
     public ProjectController(ProjectRepository projectRepository, TeamRepository teamRepository) {
         this.projectRepository = projectRepository;
         this.teamRepository = teamRepository;
+        projectManagementApi = new ProjectManagementApi(new FakeAclProjectRepository());
     }
 
     @GetMapping
@@ -93,8 +95,7 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<Void> createProject(@RequestBody ProjectDto projectDto, UriComponentsBuilder uriComponentsBuilder) {
         ParallelRunProjectTestRecord record = createProjectLegacy(projectDto, uriComponentsBuilder.cloneBuilder());
-        ParallelRunProjectTestRecord recordToCompare = new ProjectManagementApi(new FakeAclProjectRepository())
-                .createProject(projectDto, uriComponentsBuilder.cloneBuilder());
+        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.createProject(projectDto, uriComponentsBuilder.cloneBuilder());
 
         record.compareWithoutId(recordToCompare);
 
@@ -130,6 +131,9 @@ public class ProjectController {
     @PutMapping(value = "/{id}")
     public ResponseEntity<ProjectDto> updateProject(@PathVariable("id") Long id, @RequestBody ProjectDto projectDto) {
         ParallelRunProjectTestRecord record = updateProjectLegacy(id, projectDto);
+        ParallelRunProjectTestRecord recordToCompare = projectManagementApi.updateProject(id, projectDto);
+
+        record.compareWithoutId(recordToCompare);
         return record.getResponse();
     }
 
