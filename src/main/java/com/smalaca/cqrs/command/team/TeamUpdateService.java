@@ -1,7 +1,6 @@
 package com.smalaca.cqrs.command.team;
 
 import com.smalaca.taskamanager.dto.TeamDto;
-import com.smalaca.taskamanager.model.embedded.Codename;
 import com.smalaca.taskamanager.model.entities.Team;
 import com.smalaca.taskamanager.repository.TeamRepository;
 
@@ -18,34 +17,11 @@ public class TeamUpdateService {
         Optional<Team> found = teamRepository.findById(id);
 
         if (found.isPresent()) {
-            Team team = found.get();
+            TeamDomainModel teamDomainModel = new TeamDomainModel(found.get());
+            teamDomainModel.updateBasicInformation(teamDto);
 
-            if (teamDto.getName() != null) {
-                team.setName(teamDto.getName());
-            }
-
-            if (teamDto.getCodenameShort() != null && teamDto.getCodenameFull() != null) {
-                Codename codename = new Codename();
-                codename.setShortName(teamDto.getCodenameShort());
-                codename.setFullName(teamDto.getCodenameFull());
-                team.setCodename(codename);
-            }
-
-            if (teamDto.getDescription() != null) {
-                team.setDescription(teamDto.getDescription());
-            }
-
-            Team updated = teamRepository.save(team);
-
-            TeamDto dto = new TeamDto();
-            dto.setId(updated.getId());
-            dto.setName(updated.getName());
-            if (updated.getCodename() != null) {
-                dto.setCodenameShort(updated.getCodename().getShortName());
-                dto.setCodenameFull(updated.getCodename().getFullName());
-            }
-
-            dto.setDescription(updated.getDescription());
+            teamRepository.save(teamDomainModel.getTeam());
+            TeamDto dto = teamDomainModel.asDto();
 
             return Optional.of(dto);
         }
